@@ -1,0 +1,2 @@
+wget http://www.w3.org/TeamSubmission/turtle/tests/test-$1.ttl
+wget http://www.w3.org/TeamSubmission/turtle/tests/test-$1.out

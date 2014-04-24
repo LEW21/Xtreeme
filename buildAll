@@ -1,0 +1,59 @@
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
+
+echo "libxcore ================" &&
+cd libxcore &&
+qmake &&
+make clean > /dev/null &&
+make -j3 > /dev/null &&
+cd .. &&
+echo "" &&
+echo "libxtypes ================" &&
+cd libxtypes &&
+qmake &&
+make clean > /dev/null &&
+make -j3 > /dev/null &&
+cd .. &&
+echo "" &&
+echo "libxtreeme.memory ========" &&
+cd libxtreeme/backends/memory &&
+qmake &&
+make clean > /dev/null &&
+make -j3 > /dev/null &&
+cd ../../.. &&
+echo "" &&
+#echo "libxtreeme.remote ========" &&
+#cd libxtreeme/backends/remote &&
+#qmake &&
+#make clean > /dev/null &&
+#make -j3 > /dev/null &&
+#cd ../../.. &&
+#echo "" &&
+echo "libxtreeme ===============" &&
+cd libxtreeme &&
+qmake &&
+make clean > /dev/null &&
+make -j3 > /dev/null &&
+cd .. &&
+echo "" &&
+echo "xconsole ====================" &&
+cd xconsole &&
+qmake &&
+make clean > /dev/null &&
+make -j3 > /dev/null &&
+cd .. &&
+echo "" &&
+#echo "testclient ===============" &&
+#cd testclient &&
+#qmake &&
+#make clean > /dev/null &&
+#make -j3 > /dev/null &&
+#cd .. &&
+#echo "" &&
+echo "tests ====================" &&
+cd tests &&
+./gen &&
+make clean > /dev/null &&
+make -j3 > /dev/null &&
+cd .. &&
+echo "" &&
+echo "Xtreeme SC is now built."

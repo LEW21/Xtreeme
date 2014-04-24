@@ -1,0 +1,18 @@
+#!/bin/sh
+
+for dir in *
+do
+	if [ -d $dir ]
+	then
+		echo $dir
+		cd $dir
+		qmake -project "QMAKE_CXXFLAGS += -std=gnu++1y" "INCLUDEPATH += ../.." "LIBS += -lxcore -lxtypes -L../../lib" "QT = core network testlib"
+		qmake
+		cd ..
+	fi
+done
+
+rm tests.pro 2> /dev/null
+
+qmake -project -t subdirs
+qmake
