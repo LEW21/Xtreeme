@@ -8,6 +8,4 @@ CONFIG -= release
 
 CONFIG += glib
 
-INCLUDE_PATH += /home/lew21/Projects/Xtreeme
-
 include(paths.pri)
