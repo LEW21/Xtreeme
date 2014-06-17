@@ -21,7 +21,7 @@ SolutionViewer::SolutionViewer(const Xtreeme::Solution& solution, QWidget* paren
 	{
 		for (int j = 0; j < cSize; ++j)
 		{
-			setItem(i, j, new QTableWidgetItem(rows[i][j].asTurtle()));
+			setItem(i, j, new QTableWidgetItem(QString("(") + QString::number(rows[i][j].id) + QString(")") + rows[i][j].asTurtle()));
 		}
 	}
 }

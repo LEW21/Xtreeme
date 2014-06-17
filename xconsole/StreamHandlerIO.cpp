@@ -22,7 +22,7 @@ void StreamHandlerIO::handle(const X::SharedPointer<const Xtreeme::DataStream>& 
 		std::cout << '|';
 		for (const Xtreeme::Resource& res : row)
 		{
-			std::cout << ' ' << (const char*) res.asTurtle().toUtf8() << " |";
+			std::cout << ' ' << '(' << res.id << ')' << (const char*) res.asTurtle().toUtf8() << " |";
 		}
 		std::cout << std::endl;
 	});
