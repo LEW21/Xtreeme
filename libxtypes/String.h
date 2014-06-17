@@ -55,7 +55,7 @@ namespace X
 	template<> struct isX<String> : public std::true_type {};
 	template<> struct isStorable<String> : public std::true_type {};
 	template<> struct isTemporary<String> : public std::false_type {};
-	
+
 	template<> struct canConvert<bool, String> : public std::true_type {};
 	template<> struct canConvert<String, bool> : public std::true_type {};
 }
@@ -122,7 +122,7 @@ namespace std
 	{
 		size_t operator()(const X::String& v) const
 		{
-			return std::hash<const char16_t*>()(v.utf16());
+			return std::hash<std::u16string>()(std::u16string{v.utf16(), v.utf16().size()});
 		}
 	};
 }
