@@ -5,40 +5,20 @@
 
 #include "Resource.h"
 #include "Row.h"
+#include "Quad.h"
 
 namespace Xtreeme
 {
-	struct XTREEME_EXPORT Statement
+	struct XTREEME_EXPORT Statement: public Quad<Resource>
 	{
-		Resource subject;
-		Resource predicate;
-		Resource object;
-		Resource context;
-
+		using Quad::Quad;
 		inline Statement() {}
-
-		inline Statement(const Resource& S, const Resource& P, const Resource& O, const Resource& C = Resource())
-			: subject(S)
-			, predicate(P)
-			, object(O)
-			, context(C)
-		{}
-
 		inline Statement(const X::String&) {/*TODO*/}
 
 		inline bool isValid() const
 		{
 			return subject.isValid() && predicate.isValid() && object.isValid() && context.isValid();
 		}
-
-		inline bool operator==(const Statement& other) const
-		{
-			return (subject == other.subject)
-			    && (predicate == other.predicate)
-			    && (object == other.object)
-			    && (context == other.context);
-		}
-		inline bool operator!=(const Statement& other) const {return !(other == *this);}
 
 		inline bool matches(const Statement& pattern) const
 		{

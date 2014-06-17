@@ -17,8 +17,8 @@ namespace Xtreeme
 		inline RowPattern() {}
 		inline RowPattern(const std::initializer_list<Expression>& row)
 		{
-			for (auto it = row.begin(); it < row.end(); ++it)
-				(*this) << *it;
+			for (auto e : row)
+				(*this) << e;
 		}
 
 		template <class T> inline void bind(const T& bindings);
@@ -43,7 +43,7 @@ namespace Xtreeme
 		{
 			if (!expr.isVariable())
 				continue;
-			
+
 			expr = bindings[Variable(expr).name()];
 		}
 	}

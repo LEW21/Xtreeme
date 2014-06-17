@@ -14,8 +14,8 @@ namespace Xtreeme
 		inline Row() {}
 		inline Row(const std::initializer_list<Resource>& row)
 		{
-			for (auto it = row.begin(); it < row.end(); ++it)
-				(*this) << *it;
+			for (auto r : row)
+				(*this) << r;
 		}
 
 		inline bool matches(const Row& pattern) const;

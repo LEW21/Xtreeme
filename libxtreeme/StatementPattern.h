@@ -7,24 +7,14 @@
 #include "Statement.h"
 #include "expressions/Constant.h"
 #include "RowPattern.h"
+#include "Quad.h"
 
 namespace Xtreeme
 {
-	struct XTREEME_EXPORT StatementPattern
+	struct XTREEME_EXPORT StatementPattern: public Quad<Expression>
 	{
-		Expression subject;
-		Expression predicate;
-		Expression object;
-		Expression context;
-		
+		using Quad::Quad;
 		inline StatementPattern() {}
-		
-		inline StatementPattern(const Expression& S, const Expression& P, const Expression& O, const Expression& C = Expression())
-			: subject(S)
-			, predicate(P)
-			, object(O)
-			, context(C)
-		{}
 
 		inline bool isConstant() const
 		{
