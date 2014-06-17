@@ -7,41 +7,21 @@ namespace Xtreeme
 {
 	namespace Memory
 	{
-		template <typename T> struct P2
+		template <typename... T>
+		struct ImplicitTuple: public std::tuple<T...>
 		{
-			T p1;
-			T p2;
-
-			inline P2(T _p1, T _p2): p1(_p1), p2(_p2) {}
-
-			inline bool operator==(const P2<T>& other) const
-			{ return p1 == other.p1 && p2 == other.p2; }
+			template <typename... U>
+			constexpr ImplicitTuple(U&&... a): std::tuple<T...>(std::forward<U>(a)...) {}
 		};
 
-		template <typename T> struct P3
-		{
-			T p1;
-			T p2;
-			T p3;
+		template <typename T>
+		using P2 = ImplicitTuple<T, T>;
 
-			inline P3(T _p1, T _p2, T _p3): p1(_p1), p2(_p2), p3(_p3) {}
+		template <typename T>
+		using P3 = ImplicitTuple<T, T, T>;
 
-			inline bool operator==(const P3<T>& other) const
-			{ return p1 == other.p1 && p2 == other.p2 && p3 == other.p3; }
-		};
-
-		template <typename T> struct P4
-		{
-			T p1;
-			T p2;
-			T p3;
-			T p4;
-
-			inline P4(T _p1, T _p2, T _p3, T _p4): p1(_p1), p2(_p2), p3(_p3), p4(_p4) {}
-
-			inline bool operator==(const P4<T>& other) const
-			{ return p1 == other.p1 && p2 == other.p2 && p3 == other.p3 && p4 == other.p4; }
-		};
+		template <typename T>
+		using P4 = ImplicitTuple<T, T, T, T>;
 	}
 }
 
