@@ -8,6 +8,11 @@
 
 namespace Xtreeme
 {
+	static auto quote(QString s) -> QString
+	{
+		return "\"" + s.replace('"', "\\\"") + "\"";
+	}
+
 	QString Resource::asTurtle() const
 	{
 		if (!isValid())
@@ -17,7 +22,9 @@ namespace Xtreeme
 
 		if (value.is<Statement>())
 		{
-			return "!Statement!";
+			auto s = value.as<Statement>();
+			return quote(s.subject.asTurtle() + " " + s.predicate.asTurtle() + " " + s.object.asTurtle() + " " + s.context.asTurtle()) + "^^Statement"; // TODO delete
+			return quote(s.subject.asTurtle() + " " + s.predicate.asTurtle() + " " + s.object.asTurtle() + " " + s.context.asTurtle()) + "^^<http://xtreeme.org/statement/>";
 		}
 
 		QString turtle;
@@ -38,6 +45,7 @@ namespace Xtreeme
 			if (v.startsWith(QLatin1Char('\0')))
 				return "_:" + v.mid(2);
 
+			return v.mid(v.lastIndexOf(QRegExp("[/#]"))+1); // TODO drop this
 			turtle += QS("<");
 		}
 		else
