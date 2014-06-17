@@ -161,7 +161,7 @@ namespace X
 	{
 		return type == other.type && (!type || coreTypes[type]->compare(value, other.value));
 	}
-	
+
 	inline bool Variant::operator!=(const Variant& other) const
 	{
 		return !operator==(other);
@@ -181,7 +181,10 @@ namespace std
 	{
 		size_t operator()(const X::Variant& v) const
 		{
-			return X::coreTypes[v.type]->hash(v.value);
+			if (v.type)
+				return X::coreTypes[v.type]->hash(v.value);
+			else
+				return 0;
 		}
 	};
 }
