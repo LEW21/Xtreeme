@@ -5,8 +5,8 @@ SOURCES += $$memory/Statements.cpp
 
 HEADERS += $$memory/Data.h
 
-//HEADERS += $$memory/Reasoner.h
-//SOURCES += $$memory/Reasoner.cpp
+HEADERS += $$memory/Reasoner.h
+SOURCES += $$memory/Reasoner.cpp
 
 HEADERS += $$memory/BackendFactory.h
 SOURCES += $$memory/BackendFactory.cpp
