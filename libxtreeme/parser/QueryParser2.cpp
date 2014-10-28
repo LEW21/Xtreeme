@@ -1,40 +1,56 @@
+#include "QueryParser2.h"
+
 namespace Xtreeme
 {
 
-struct Query
+auto parseExpression()
 {
-	enum Type {
-		Select,
-		Construct,
-		Describe,
-		Ask
-	} type;
+	return Expression{};
+}
 
-	// SELECT
-	bool distinct = false;
-	bool reduced = false;
+auto parseGGP()
+{
+	return GGP{};
+}
 
-	// SELECT, DESCRIBE
-	optional<vector<Binding>> projection;
+auto match(const char*)
+{
+}
 
-	// CONSTRUCT
-	optional<GGP> tpl;
+auto try_match(const char*)
+{
+	return true;
+}
 
-	// everywhere
-	vector<Graph> from;
-	optional<GGP> where; // optional in DESCRIBE, required in others.
-	optional<int> limit;
-	optional<int> offset;
+auto is(const char*)
+{
+	return true;
+}
 
-	Query(Type t): type(t) {}
-};
+template <typename T>
+auto is()
+{
+	return true;
+}
+
+template <typename T>
+auto read()
+{
+	return T{};
+}
 
 inline auto SelectQuery()    { return Query(Query::Select); }
 inline auto ConstructQuery() { return Query(Query::Construct); }
 inline auto DescribeQuery()  { return Query(Query::Describe); }
 inline auto AskQuery()       { return Query(Query::Ask); }
 
-auto parseSelectClause()
+inline auto parseTriplesTemplate()
+{
+	// TODO report error if this GGP is not a TriplesTemplate.
+	return parseGGP();
+}
+
+inline auto parseSelectClause()
 {
 	match("SELECT");
 	auto query = SelectQuery();
@@ -55,8 +71,7 @@ auto parseSelectClause()
 			else if (try_match("("))
 			{
 				auto expr = parseExpression();
-				if (!match("AS"))
-					throw ParseError("Expected AS.");
+				match("AS");
 				query.projection->emplace_back(read<Variable>(), expr);
 			}
 			else
@@ -68,34 +83,29 @@ auto parseSelectClause()
 	return query;
 }
 
-auto parseDatasetClause(y)
+inline auto parseDatasetClauses()
 {
-	match("FROM");
-
-	if (is<URI>())
-		return DefaultGraph(read<URI>());
-	else if (try_match("NAMED"))
-		return NamedGraph(read<URI>());
-	else
-		throw ParseError("Expected uri or NAMED.");
-}
-
-auto parseDatasetClauses()
-{
-	vector<Graph> from;
-	while (is("FROM")) from.push_back(parseDatasetClause());
+	From from;
+	while (try_match("FROM"))
+	{
+		if (is<URI>())
+			from.defaultGraphs.emplace_back(read<URI>());
+		else if (try_match("NAMED"))
+			from.namedGraphs.emplace_back(read<URI>());
+		else
+			throw ParseError("Expected uri or NAMED.");
+	}
 	return from;
 }
 
-auto parseWhereClause()
+inline auto parseWhereClause()
 {
 	(void) try_match("WHERE");
 
-	return readGGP();
+	return parseGGP();
 }
 
-template <typename Query>
-auto parseSolutionModifier(Query& query)
+inline auto parseSolutionModifier(Query& query)
 {
 	if (try_match("GROUP"))
 	{
@@ -126,7 +136,7 @@ auto parseSolutionModifier(Query& query)
 		if (try_match("OFFSET"))
 			query.offset = read<int>();
 	}
-	else if (try_match("OFFSET")
+	else if (try_match("OFFSET"))
 	{
 		query.offset = read<int>();
 
@@ -135,7 +145,7 @@ auto parseSolutionModifier(Query& query)
 	}
 }
 
-auto parseSelectQuery()
+inline auto parseSelectQuery()
 {
 	auto query = parseSelectClause();
 	query.from  = parseDatasetClauses();
@@ -145,7 +155,7 @@ auto parseSelectQuery()
 	return query;
 }
 
-auto parseConstructQuery()
+inline auto parseConstructQuery()
 {
 	match("CONSTRUCT");
 	auto query = ConstructQuery();
@@ -174,7 +184,7 @@ auto parseConstructQuery()
 	return query;
 }
 
-auto parseDescribeQuery()
+inline auto parseDescribeQuery()
 {
 	match("DESCRIBE");
 	auto query = DescribeQuery();
@@ -203,7 +213,7 @@ auto parseDescribeQuery()
 	return query;
 }
 
-auto parseAskQuery()
+inline auto parseAskQuery()
 {
 	match("ASK");
 	auto query = AskQuery();
