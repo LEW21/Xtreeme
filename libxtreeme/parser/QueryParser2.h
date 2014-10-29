@@ -2,6 +2,7 @@
 #include <vector>
 #include "../expressions/Variable.h"
 #include <libxtypes/URI.h>
+#include "rtti_variant.h"
 
 namespace Xtreeme
 {
@@ -10,7 +11,68 @@ namespace Xtreeme
 	using boost::optional;
 	using X::URI;
 
-	struct GGP {};
+	struct Constraint {};
+
+	namespace GraphPatterns
+	{
+		struct Basic
+		{
+		};
+
+		struct Join
+		{
+			Variant a, b;
+			Join(Variant a, Variant b): a(a), b(b) {}
+		};
+
+		struct LeftJoin
+		{
+			Variant a, b;
+			LeftJoin(Variant a, Variant b): a(a), b(b) {}
+		};
+
+		struct Minus
+		{
+			Variant a, b;
+			Minus(Variant a, Variant b): a(a), b(b) {}
+		};
+
+		struct Union
+		{
+			Variant a, b;
+			Union(Variant a, Variant b): a(a), b(b) {}
+		};
+
+		struct Graph
+		{
+			URI graph;
+			Variant data;
+			Graph(URI graph, Variant data): graph(graph), data(data) {}
+		};
+
+		struct Service
+		{
+			bool silent;
+			URI graph;
+			Variant data;
+			Service(bool silent, URI graph, Variant data): silent(silent), graph(graph), data(data) {}
+		};
+
+		struct Extend
+		{
+			Variable var;
+			Expression exp;
+			Variant data;
+			Extend(Variable var, Expression exp, Variant data): var(var), exp(exp), data(data) {}
+		};
+
+		struct Filter
+		{
+			vector<Constraint> constraints;
+			Variant data;
+			Filter(vector<Constraint> constraints, Variant data): constraints(constraints), data(data) {}
+		};
+	}
 
 	struct parse_error: public std::domain_error
 	{
@@ -52,11 +114,11 @@ namespace Xtreeme
 		optional<vector<Binding>> projection;
 
 		// CONSTRUCT
-		optional<GGP> tpl;
+		optional<GraphPatterns::Basic> tpl;
 
 		// everywhere
 		From from;
-		optional<GGP> where; // optional in DESCRIBE, required in others.
+		optional<Variant> where; // optional in DESCRIBE, required in others.
 		optional<int> limit;
 		optional<int> offset;
 

@@ -2,16 +2,18 @@
 
 namespace Xtreeme
 {
+using namespace GraphPatterns;
 
-auto parseExpression()
-{
-	return Expression{};
-}
-
-auto parseGGP()
-{
-	return GGP{};
-}
+inline auto parseSelectClause() -> Query;
+inline auto parseWhereClause() -> Variant;
+inline auto parseSolutionModifier(Query&) -> void;
+inline auto parseValuesClause(Query&) -> void;
+inline auto parseGroupGraphPattern() -> Variant;
+inline auto parseDataBlock() -> Variant;
+inline auto parseConstraint() -> Constraint;
+inline auto parseExpression() -> Expression;
+inline auto parseVarOrIri() -> URI;
+inline auto parseTriplesBlockNullable() -> Basic;
 
 auto match(const char*)
 {
@@ -46,11 +48,86 @@ inline auto AskQuery()       { return Query(Query::Ask); }
 
 inline auto parseTriplesTemplate()
 {
-	// TODO report error if this GGP is not a TriplesTemplate.
-	return parseGGP();
+	// TODO report error if this TriplesBlock is not a TriplesTemplate.
+	return parseTriplesBlockNullable();
 }
 
-inline auto parseSelectClause()
+auto parseSubSelect()
+{
+	auto query = parseSelectClause();
+	query.where = parseWhereClause();
+	parseSolutionModifier(query);
+	parseValuesClause(query);
+	return query;
+}
+
+auto parseGraphPatternNotTriples(Variant ggp) -> Variant
+{
+	if (is("{"))
+	{
+		auto tmp = parseGroupGraphPattern();
+		while (try_match("UNION"))
+			tmp = Union(tmp, parseGroupGraphPattern());
+		return Join(ggp, tmp);
+	}
+
+	if (try_match("OPTIONAL"))
+		return LeftJoin(ggp, parseGroupGraphPattern());
+
+	if (try_match("MINUS"))
+		return Minus(ggp, parseGroupGraphPattern());
+
+	if (try_match("GRAPH"))
+		return Join(ggp, Graph(parseVarOrIri(), parseGroupGraphPattern()));
+
+	if (try_match("SERVICE"))
+		return Join(ggp, Service(try_match("SILENT"), parseVarOrIri(), parseGroupGraphPattern()));
+
+	if (try_match("FILTER"))
+		throw ParseError("FILTER is handled in parseGroupGraphPatternSub.");
+
+	if (try_match("BIND"))
+	{
+		match("(");
+		auto exp = parseExpression();
+		match("AS");
+		auto var = read<Variable>();
+		return Extend(var, exp, ggp);
+	}
+
+	if (try_match("VALUES"))
+		return Join(ggp, parseDataBlock());
+}
+
+auto parseGroupGraphPatternSub()
+{
+	auto filters = vector<Constraint>{};
+
+	auto ggp = Variant{parseTriplesBlockNullable()};
+
+	while (is("{") || is("OPTIONAL") || is("MINUS") || is("GRAPH") || is("SERVICE") || is("BIND") || is("VALUES"))
+	{
+		if (try_match("FILTER"))
+			filters.emplace_back(parseConstraint());
+		else
+			ggp = parseGraphPatternNotTriples(ggp);
+		(void) try_match(".");
+
+		ggp = Join(ggp, parseTriplesBlockNullable());
+	}
+
+	return Filter(filters, ggp);
+}
+
+auto parseGroupGraphPattern() -> Variant
+{
+	match("{");
+	auto ggp = is("SELECT") ? Variant{parseSubSelect()} : Variant{parseGroupGraphPatternSub()};
+	match("}");
+	return ggp;
+}
+
+inline auto parseSelectClause() -> Query
 {
 	match("SELECT");
 	auto query = SelectQuery();
@@ -98,14 +175,14 @@ inline auto parseDatasetClauses()
 	return from;
 }
 
-inline auto parseWhereClause()
+inline auto parseWhereClause() -> Variant
 {
 	(void) try_match("WHERE");
 
-	return parseGGP();
+	return parseGroupGraphPattern();
 }
 
-inline auto parseSolutionModifier(Query& query)
+inline auto parseSolutionModifier(Query& query) -> void
 {
 	if (try_match("GROUP"))
 	{
@@ -145,6 +222,15 @@ inline auto parseSolutionModifier(Query& query)
 	}
 }
 
+auto parseValuesClause()
+{
+	if (try_match("VALUES"))
+	{
+		// TODO
+		throw ParseError("VALUES is not yet supported.");
+	}
+}
+
 inline auto parseSelectQuery()
 {
 	auto query = parseSelectClause();
@@ -173,8 +259,8 @@ inline auto parseConstructQuery()
 		query.from = parseDatasetClauses();
 		match("WHERE");
 		match("{");
-		query.where = parseTriplesTemplate();
-		query.tpl = query.where;
+		query.tpl = parseTriplesTemplate();
+		query.where = query.tpl;
 		match("}");
 	}
 	else
@@ -227,14 +313,14 @@ inline auto parseAskQuery()
 
 auto parseQuery() -> Query
 {
-	if (is("SELECT"))
-		return parseSelectQuery();
-	else if (is("CONSTRUCT"))
-		return parseConstructQuery();
-	else if (is("DESCRIBE"))
-		return parseDescribeQuery();
-	else if (is("ASK"))
-		return parseAskQuery();
+	auto q =
+		is("SELECT")    ? parseSelectQuery() :
+		is("CONSTRUCT") ? parseConstructQuery() :
+		is("DESCRIBE")  ? parseDescribeQuery() :
+		is("ASK")       ? parseAskQuery() :
+		throw ParseError("Expected SELECT, CONSTRUCT, DESCRIBE or ASK.");
+	parseValuesClause();
+	return q;
 }
 
 }
