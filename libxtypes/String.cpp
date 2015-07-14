@@ -12,7 +12,7 @@
 
 namespace X
 {
-	String::String(UTF16String _p) throw()
+	String::String(std::u16string _p) throw()
 		: p(_p)
 	{}
 
@@ -30,45 +30,39 @@ namespace X
 			throw ConversionError(typeOf<String>::type, typeOf<bool>::type);
 	}
 
-	UTF8String String::utf8() const throw()
+	std::string String::utf8() const throw()
 	{
 		QByteArray utf8 = QString(*this).toUtf8();
-		UTF8String p(utf8.size());
-		p.copy(utf8.constData(), utf8.size());
-		return p;
+		return {utf8.constData(), size_t(utf8.size())};
 	}
 
-	String String::fromUtf8(const UTF8String& utf8)
+	String String::fromUtf8(const std::string& utf8)
 	{
-		QString s = QString::fromUtf8(utf8);
-		UTF16String p(s.size());
-		p.copy((const char16_t*) s.unicode(), s.size());
+		QString s = QString::fromStdString(utf8);
+		std::u16string p{(const char16_t*) s.unicode(), size_t(s.size())};
 		return String(p);
 	}
 
-	UTF16String String::utf16() const throw()
+	std::u16string String::utf16() const throw()
 	{
 		return p;
 	}
 	
-	String String::fromUtf16(const UTF16String& utf16)
+	String String::fromUtf16(const std::u16string& utf16)
 	{
 		return String(utf16);
 	}
 
-	UTF32String String::utf32() const throw()
+	std::u32string String::utf32() const throw()
 	{
 		QVector<uint> utf32 = QString(*this).toUcs4();
-		UTF32String p(utf32.size());
-		p.copy((const char32_t*) utf32.constData(), utf32.size());
-		return p;
+		return {(const char32_t*) utf32.constData(), size_t(utf32.size())};
 	}
 
-	String String::fromUtf32(const UTF32String& utf32)
+	String String::fromUtf32(const std::u32string& utf32)
 	{
-		QString s = QString::fromUcs4((const uint*) (const char32_t*) utf32);
-		UTF16String p(s.size());
-		p.copy((const char16_t*) s.unicode(), s.size());
+		QString s = QString::fromUcs4((const uint*) utf32.data());
+		std::u16string p{(const char16_t*) s.unicode(), size_t(s.size())};
 		return String(p);
 	}
 }

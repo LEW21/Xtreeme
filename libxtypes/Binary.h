@@ -3,7 +3,7 @@
 
 #include "X.h"
 
-#include <libxcore/Array.h>
+#include <string>
 #include "String.h"
 
 #ifdef QT4
@@ -14,18 +14,17 @@ namespace X
 {
 	class Binary
 	{
-		BinaryString p;
+		std::string p;
 
 	public:
-		inline Binary() throw(std::bad_alloc);
-
-		inline Binary(const Binary&) throw();
+		inline Binary() = default;
+		inline Binary(const Binary&) = default;
 		
 		inline Binary(const String&) throw();
 		inline operator String() const throw();
 
-		inline Binary(const BinaryString&) throw();
-		inline operator BinaryString() const throw();
+		inline Binary(const std::string&) throw();
+		inline operator std::string() const throw();
 
 #ifdef QT4
 		inline Binary(const QByteArray&) throw();
@@ -45,14 +44,6 @@ namespace X
 
 namespace X
 {
-	inline Binary::Binary() throw(std::bad_alloc)
-		: p(0, 0, (const char*) 0)
-	{}
-
-	inline Binary::Binary(const Binary& other) throw()
-		: p(other.p)
-	{}
-
 	inline Binary::Binary(const String& value) throw()
 		: p(value.utf8())
 	{}
@@ -62,25 +53,23 @@ namespace X
 		return String::fromUtf8(p);
 	}
 
-	inline Binary::Binary(const BinaryString& value) throw()
+	inline Binary::Binary(const std::string& value) throw()
 		: p(value)
 	{}
 
-	inline Binary::operator BinaryString() const throw()
+	inline Binary::operator std::string() const throw()
 	{
 		return p;
 	}
 
 #ifdef QT4
 	inline Binary::Binary(const QByteArray& value) throw()
-		: p(value.size())
-	{
-		p.copy(value, value.size());
-	}
+		: p((const char*) value, value.size())
+	{}
 
 	inline Binary::operator QByteArray() const throw()
 	{
-		return (const char*) p;
+		return p.data();
 	}
 #endif
 }
@@ -92,7 +81,7 @@ namespace std
 	{
 		size_t operator()(const X::Binary& v) const
 		{
-			return std::hash<const char*>()(X::BinaryString(v));
+			return std::hash<std::string>()(v);
 		}
 	};
 }
